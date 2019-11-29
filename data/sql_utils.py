@@ -20,34 +20,94 @@ def create_sales_table(conn):
     CREATE_SALES_TABLE_QUERY = """
         DROP TABLE IF EXISTS sales;
         CREATE TABLE sales (
-        ExciseTaxNbr       INT,
-        Major              CHAR(6),
-        Minor              CHAR(4),
-        DocumentDate       DATE,
-        SalePrice          INT,
-        RecordingNbr       CHAR(14),
-        Volume             CHAR(3),
-        Page               CHAR(3),
-        PlatNbr            CHAR(6),
-        PlatType           CHAR(1),
-        PlatLot            CHAR(14),
-        PlatBlock          CHAR(7),
-        SellerName         TEXT,
-        BuyerName          TEXT,
-        PropertyType       INT,
-        PrincipalUse       INT,
-        SaleInstrument     INT,
-        AFForestLand       CHAR(1),
-        AFCurrentUseLand   CHAR(1),
-        AFNonProfitUse     CHAR(1),
-        AFHistoricProperty CHAR(1),
-        SaleReason         INT,
-        PropertyClass      INT,
-        SaleWarning        TEXT
+            ExciseTaxNbr       INT,
+            Major              CHAR(6),
+            Minor              CHAR(4),
+            DocumentDate       DATE,
+            SalePrice          INT,
+            RecordingNbr       CHAR(14),
+            Volume             CHAR(3),
+            Page               CHAR(3),
+            PlatNbr            CHAR(6),
+            PlatType           CHAR(1),
+            PlatLot            CHAR(14),
+            PlatBlock          CHAR(7),
+            SellerName         TEXT,
+            BuyerName          TEXT,
+            PropertyType       INT,
+            PrincipalUse       INT,
+            SaleInstrument     INT,
+            AFForestLand       CHAR(1),
+            AFCurrentUseLand   CHAR(1),
+            AFNonProfitUse     CHAR(1),
+            AFHistoricProperty CHAR(1),
+            SaleReason         INT,
+            PropertyClass      INT,
+            SaleWarning        TEXT
         );
     """
     cursor = conn.cursor()
     cursor.execute(CREATE_SALES_TABLE_QUERY)
+    conn.commit()
+
+def create_buildings_table(conn):
+    CREATE_BUILDINGS_TABLE_QUERY = """
+        DROP TABLE IF EXISTS buildings;
+        CREATE TABLE BUILDINGS (
+            Major              CHAR(6),
+            Minor              CHAR(4),
+            BldgNbr            INT,
+            NbrLivingUnits     INT,
+            Address            TEXT,
+            BuildingNumber     CHAR(5),
+            Fraction           CHAR(3),
+            DirectionPrefix    CHAR(2),
+            StreetName         CHAR(25),
+            StreetType         CHAR(6),
+            DirectionSuffix    CHAR(2),
+            ZipCode            CHAR(10),
+            Stories            REAL,
+            BldgGrade          INT,
+            BldgGradeVar       INT,
+            SqFt1stFloor       INT,
+            SqFtHalfFloor      INT,
+            SqFt2ndFloor       INT,
+            SqFtUpperFloor     INT,
+            SqFtUnfinFull      INT,
+            SqFtUnfinHalf      INT,
+            SqFtTotLiving      INT,
+            SqFtTotBasement    INT,
+            SqFtFinBasement    INT,
+            FinBasementGrade   INT,
+            SqFtGarageBasement INT,
+            SqFtGarageAttached INT,
+            DaylightBasement   CHAR(1),
+            SqFtOpenPorch      INT,
+            SqFtEnclosedPorch  INT,
+            SqFtDeck           INT,
+            HeatSystem         INT,
+            HeatSource         INT,
+            BrickStone         INT,
+            ViewUtilization    CHAR(1),
+            Bedrooms           INT,
+            BathHalfCount      INT,
+            Bath3qtrCount      INT,
+            BathFullCount      INT,
+            FpSingleStory      INT,
+            FpMultiStory       INT,
+            FpFreestanding     INT,
+            FpAdditional       INT,
+            YrBuilt            INT,
+            YrRenovated        INT,
+            PcntComplete       INT,
+            Obsolescence       INT,
+            PcntNetCondition   INT,
+            Condition          INT,
+            AddnlCost          INT
+        );
+    """
+    cursor = conn.cursor()
+    cursor.execute(CREATE_BUILDINGS_TABLE_QUERY)
     conn.commit()
 
 def copy_csv_to_sales_table(conn, sales_csv_file):
@@ -57,4 +117,13 @@ def copy_csv_to_sales_table(conn, sales_csv_file):
     COPY_SALES_QUERY = """COPY sales FROM STDIN WITH (FORMAT CSV)"""
     cursor = conn.cursor()
     cursor.copy_expert(COPY_SALES_QUERY, sales_csv_file)
+    conn.commit()
+
+def copy_csv_to_buildings_table(conn, buildings_csv_file):
+    # skip the header row
+    next(buildings_csv_file)
+
+    COPY_BUILDINGS_QUERY = """COPY buildings FROM STDIN WITH (FORMAT CSV)"""
+    cursor = conn.cursor()
+    cursor.copy_expert(COPY_BUILDINGS_QUERY, buildings_csv_file)
     conn.commit()
