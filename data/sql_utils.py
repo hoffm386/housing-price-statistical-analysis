@@ -228,3 +228,25 @@ def copy_csv_to_parcels_table(conn, parcels_csv_file):
     cursor = conn.cursor()
     cursor.copy_expert(COPY_PARCELS_QUERY, parcels_csv_file)
     conn.commit()
+
+def create_tables():
+    conn = psycopg2.connect(dbname="housing_data")
+
+    create_sales_table(conn)
+    create_buildings_table(conn)
+    create_parcels_table(conn)
+
+    conn.close()
+
+def copy_csv_files(sales_csv_file, buildings_csv_file, parcels_csv_file):
+    conn = psycopg2.connect(dbname="housing_data")
+
+    copy_csv_to_sales_table(conn, sales_csv_file)
+    copy_csv_to_buildings_table(conn, buildings_csv_file)
+    copy_csv_to_parcels_table(conn, parcels_csv_file)
+
+    conn.close()
+
+def create_database_and_tables():
+    create_database()
+    create_tables()
