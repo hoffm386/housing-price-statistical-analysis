@@ -19,7 +19,7 @@ def open_csv(zip_file, csv_name):
     """
     csv_file_bytes = zip_file.open(csv_name)
     # it seems we have to open the .zip as bytes, but DictReader requires text
-    csv_file_text = TextIOWrapper(csv_file_bytes)
+    csv_file_text = TextIOWrapper(csv_file_bytes, encoding="ISO-8859-1")
     return csv_file_text
 
 def collect_data(URL, csv_name):

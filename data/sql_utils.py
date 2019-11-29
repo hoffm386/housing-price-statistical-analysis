@@ -53,7 +53,7 @@ def create_sales_table(conn):
 def create_buildings_table(conn):
     CREATE_BUILDINGS_TABLE_QUERY = """
         DROP TABLE IF EXISTS buildings;
-        CREATE TABLE BUILDINGS (
+        CREATE TABLE buildings (
             Major              CHAR(6),
             Minor              CHAR(4),
             BldgNbr            INT,
@@ -110,6 +110,98 @@ def create_buildings_table(conn):
     cursor.execute(CREATE_BUILDINGS_TABLE_QUERY)
     conn.commit()
 
+def create_parcels_table(conn):
+    CREATE_PARCELS_TABLE_QUERY = """
+        DROP TABLE IF EXISTS parcels;
+        CREATE TABLE parcels (
+            Major                  CHAR(6),
+            Minor                  CHAR(4),
+            PropName               CHAR(80),
+            PlatName               CHAR(50),
+            PlatLot                CHAR(14),
+            PlatBlock              CHAR(7),
+            Range                  INT,
+            Township               INT,
+            Section                INT,
+            QuarterSection         CHAR(2),
+            PropType               CHAR(1),
+            Area                   CHAR(3),
+            SubArea                CHAR(3),
+            SpecArea               CHAR(3),
+            SpecSubArea            CHAR(3),
+            DistrictName           CHAR(80),
+            LevyCode               CHAR(4),
+            CurrentZoning          CHAR(50),
+            HBUAsIfVacant          INT,
+            HBUAsImproved          INT,
+            PresentUse             INT,
+            SqFtLot                INT,
+            WaterSystem            INT,
+            SewerSystem            INT,
+            Access                 INT,
+            Topography             INT,
+            StreetSurface          INT,
+            RestrictiveSzShape     INT,
+            InadequateParking      INT,
+            PcntUnusable           INT,
+            Unbuildable            CHAR(5), -- "Unbuildable" is not in the DOC
+            MtRainier              INT,
+            Olympics               INT,
+            Cascades               INT,
+            Territorial            INT,
+            SeattleSkyline         INT,
+            PugetSound             INT,
+            LakeWashington         INT,
+            LakeSammamish          INT,
+            SmallLakeRiverCreek    INT,
+            OtherView              INT,
+            WfntLocation           INT,
+            WfntFootage            INT,
+            WfntBank               INT,
+            WfntPoorQuality        INT,
+            WfntRestrictedAccess   INT,
+            WfntAccessRights       CHAR(1),
+            WfntProximityInfluence CHAR(1),
+            TidelandShoreland      INT,
+            LotDepthFactor         INT,
+            TrafficNoise           INT,
+            AirportNoise           INT,
+            PowerLines             CHAR(1),
+            OtherNuisances         CHAR(1),
+            NbrBldgSites           INT,
+            Contamination          INT,
+            DNRLease               CHAR(1),
+            AdjacentGolfFairway    CHAR(1),
+            AdjacentGreenbelt      CHAR(1),
+            -- "Common Property" is listed here in the DOC, but isn't in the CSV
+            HistoricSite           INT,
+            CurrentUseDesignation  INT,
+            NativeGrowthProtEsmt   CHAR(1),
+            Easements              CHAR(1),
+            OtherDesignation       CHAR(1),
+            DeedRestrictions       CHAR(1),
+            DevelopmentRightsPurch CHAR(1),
+            CoalMineHazard         CHAR(1),
+            CriticalDrainage       CHAR(1),
+            ErosionHazard          CHAR(1),
+            LandfillBuffer         CHAR(1),
+            HundredYrFloodPlain    CHAR(1),
+            SeismicHazard          CHAR(1),
+            LandslideHazard        CHAR(1),
+            SteepSlopeHazard       CHAR(1),
+            Stream                 CHAR(1),
+            Wetland                CHAR(1),
+            SpeciesOfConcern       CHAR(1),
+            SensitiveAreaTract     CHAR(1),
+            WaterProblems          CHAR(1),
+            TranspConcurrency      CHAR(1),
+            OtherProblems          CHAR(1)
+        );
+    """
+    cursor = conn.cursor()
+    cursor.execute(CREATE_PARCELS_TABLE_QUERY)
+    conn.commit()
+
 def copy_csv_to_sales_table(conn, sales_csv_file):
     # skip the header row
     next(sales_csv_file)
@@ -126,4 +218,13 @@ def copy_csv_to_buildings_table(conn, buildings_csv_file):
     COPY_BUILDINGS_QUERY = """COPY buildings FROM STDIN WITH (FORMAT CSV)"""
     cursor = conn.cursor()
     cursor.copy_expert(COPY_BUILDINGS_QUERY, buildings_csv_file)
+    conn.commit()
+
+def copy_csv_to_parcels_table(conn, parcels_csv_file):
+    # skip the header row
+    next(parcels_csv_file)
+
+    COPY_PARCELS_QUERY = """COPY parcels FROM STDIN WITH (FORMAT CSV)"""
+    cursor = conn.cursor()
+    cursor.copy_expert(COPY_PARCELS_QUERY, parcels_csv_file)
     conn.commit()
