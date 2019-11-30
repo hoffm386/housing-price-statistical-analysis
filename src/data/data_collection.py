@@ -1,7 +1,7 @@
 import requests
 from io import BytesIO, TextIOWrapper
 from zipfile import ZipFile
-from sql_utils import create_database_and_tables, copy_csv_files
+from src.data import sql_utils
 
 def download_zipfile(URL):
     """
@@ -59,7 +59,7 @@ def load_into_sql(sales_files, buildings_files, parcels_files):
     buildings_zip_file, buildings_csv_file = buildings_files
     parcels_zip_file, parcels_csv_file = parcels_files
 
-    copy_csv_files(sales_csv_file, buildings_csv_file, parcels_csv_file)
+    sql_utils.copy_csv_files(sales_csv_file, buildings_csv_file, parcels_csv_file)
 
     sales_zip_file.close()
     sales_csv_file.close()
@@ -69,6 +69,6 @@ def load_into_sql(sales_files, buildings_files, parcels_files):
     parcels_csv_file.close()
 
 def download_data_and_load_into_sql():
-    create_database_and_tables()
+    sql_utils.create_database_and_tables()
     sales_files, buildings_files, parcels_files = collect_all_data_files()
     load_into_sql(sales_files, buildings_files, parcels_files)
