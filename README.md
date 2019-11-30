@@ -14,6 +14,9 @@ This directory structure is inspired by [cookiecutter data science](https://gith
 │
 ├── src                <- Source code for use in this project
 │   ├── data           <- Scripts to download and query data
+│   │   ├── sql        <- SQL scripts. Naming convention is a number (for ordering)
+│   │   │                 followed by the topic of the script, e.g.
+│   │   │                 03_create_sales_table.sql
 │   │   ├── data_collection.py
 │   │   └── sql_utils.py
 │   │
@@ -85,6 +88,18 @@ conn.close()
 ```
 
 Because it is loaded into a PostgreSQL database, you can also query it with any client you prefer, not just `psycopg2`.  For example, if you prefer a command-line interface without Python, you can use the `psql` CLI tool.
+
+Any of the `.sql` scripts in the `src/data/sql` directory can be executed directly with the `psql` CLI tool, e.g.
+```
+psql housing_data -f src/data/sql/09_sales_df_query.sql
+```
+
+(Note that many of the scripts have side effects such as dropping tables!)
+
+The `.psql` queries for copying data require that you have a CSV file to copy in via STDIN.  For example:
+```
+psql housing_data -f src/data/sql/06_copy_sales_csv_to_table.psql < data/EXTR_RPSale.csv
+```
 
 ## Developing `src` Files
 
