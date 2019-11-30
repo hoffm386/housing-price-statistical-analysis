@@ -1,0 +1,1 @@
+COPY buildings FROM STDIN WITH (FORMAT CSV);
