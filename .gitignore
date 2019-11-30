@@ -105,3 +105,7 @@ venv.bak/
 
 # VS Code settings
 .vscode
+
+# sometimes the file extension .sql means a SQL database, so it is globally
+# gitignored.  override that setting for this repo.
+!*.sql

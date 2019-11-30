@@ -1,5 +1,6 @@
 import psycopg2
 import pandas as pd
+import os
 
 def create_database():
     """
@@ -10,225 +11,35 @@ def create_database():
     conn = psycopg2.connect(dbname="postgres")
     conn.autocommit = True # it seems this mode is needed to make a db
     conn.set_isolation_level(0) # also this for dropping db
-    cursor = conn.cursor()
-    DROP_OLD_DATABASE_QUERY = "DROP DATABASE housing_data;"
-    cursor.execute(DROP_OLD_DATABASE_QUERY)
-    CREATE_DATABASE_QUERY = "CREATE DATABASE housing_data;"
-    cursor.execute(CREATE_DATABASE_QUERY)
+
+    execute_sql_script(conn, "01_drop_old_database.sql")
+    execute_sql_script(conn, "02_create_new_database.sql")
+
     conn.close()
 
 def create_sales_table(conn):
-    CREATE_SALES_TABLE_QUERY = """
-        DROP TABLE IF EXISTS sales;
-        CREATE TABLE sales (
-            ExciseTaxNbr       INT,
-            Major              CHAR(6),
-            Minor              CHAR(4),
-            DocumentDate       DATE,
-            SalePrice          INT,
-            RecordingNbr       CHAR(14),
-            Volume             CHAR(3),
-            Page               CHAR(3),
-            PlatNbr            CHAR(6),
-            PlatType           CHAR(1),
-            PlatLot            CHAR(14),
-            PlatBlock          CHAR(7),
-            SellerName         TEXT,
-            BuyerName          TEXT,
-            PropertyType       INT,
-            PrincipalUse       INT,
-            SaleInstrument     INT,
-            AFForestLand       CHAR(1),
-            AFCurrentUseLand   CHAR(1),
-            AFNonProfitUse     CHAR(1),
-            AFHistoricProperty CHAR(1),
-            SaleReason         INT,
-            PropertyClass      INT,
-            SaleWarning        TEXT
-        );
-    """
-    cursor = conn.cursor()
-    cursor.execute(CREATE_SALES_TABLE_QUERY)
-    conn.commit()
+    execute_sql_script(conn, "03_create_sales_table.sql")
 
 def create_buildings_table(conn):
-    CREATE_BUILDINGS_TABLE_QUERY = """
-        DROP TABLE IF EXISTS buildings;
-        CREATE TABLE buildings (
-            Major              CHAR(6),
-            Minor              CHAR(4),
-            BldgNbr            INT,
-            NbrLivingUnits     INT,
-            Address            TEXT,
-            BuildingNumber     CHAR(5),
-            Fraction           CHAR(3),
-            DirectionPrefix    CHAR(2),
-            StreetName         CHAR(25),
-            StreetType         CHAR(6),
-            DirectionSuffix    CHAR(2),
-            ZipCode            CHAR(10),
-            Stories            REAL,
-            BldgGrade          INT,
-            BldgGradeVar       INT,
-            SqFt1stFloor       INT,
-            SqFtHalfFloor      INT,
-            SqFt2ndFloor       INT,
-            SqFtUpperFloor     INT,
-            SqFtUnfinFull      INT,
-            SqFtUnfinHalf      INT,
-            SqFtTotLiving      INT,
-            SqFtTotBasement    INT,
-            SqFtFinBasement    INT,
-            FinBasementGrade   INT,
-            SqFtGarageBasement INT,
-            SqFtGarageAttached INT,
-            DaylightBasement   CHAR(1),
-            SqFtOpenPorch      INT,
-            SqFtEnclosedPorch  INT,
-            SqFtDeck           INT,
-            HeatSystem         INT,
-            HeatSource         INT,
-            BrickStone         INT,
-            ViewUtilization    CHAR(1),
-            Bedrooms           INT,
-            BathHalfCount      INT,
-            Bath3qtrCount      INT,
-            BathFullCount      INT,
-            FpSingleStory      INT,
-            FpMultiStory       INT,
-            FpFreestanding     INT,
-            FpAdditional       INT,
-            YrBuilt            INT,
-            YrRenovated        INT,
-            PcntComplete       INT,
-            Obsolescence       INT,
-            PcntNetCondition   INT,
-            Condition          INT,
-            AddnlCost          INT
-        );
-    """
-    cursor = conn.cursor()
-    cursor.execute(CREATE_BUILDINGS_TABLE_QUERY)
-    conn.commit()
+    execute_sql_script(conn, "04_create_buildings_table.sql")
 
 def create_parcels_table(conn):
-    CREATE_PARCELS_TABLE_QUERY = """
-        DROP TABLE IF EXISTS parcels;
-        CREATE TABLE parcels (
-            Major                  CHAR(6),
-            Minor                  CHAR(4),
-            PropName               CHAR(80),
-            PlatName               CHAR(50),
-            PlatLot                CHAR(14),
-            PlatBlock              CHAR(7),
-            Range                  INT,
-            Township               INT,
-            Section                INT,
-            QuarterSection         CHAR(2),
-            PropType               CHAR(1),
-            Area                   CHAR(3),
-            SubArea                CHAR(3),
-            SpecArea               CHAR(3),
-            SpecSubArea            CHAR(3),
-            DistrictName           CHAR(80),
-            LevyCode               CHAR(4),
-            CurrentZoning          CHAR(50),
-            HBUAsIfVacant          INT,
-            HBUAsImproved          INT,
-            PresentUse             INT,
-            SqFtLot                INT,
-            WaterSystem            INT,
-            SewerSystem            INT,
-            Access                 INT,
-            Topography             INT,
-            StreetSurface          INT,
-            RestrictiveSzShape     INT,
-            InadequateParking      INT,
-            PcntUnusable           INT,
-            Unbuildable            CHAR(5), -- "Unbuildable" is not in the DOC
-            MtRainier              INT,
-            Olympics               INT,
-            Cascades               INT,
-            Territorial            INT,
-            SeattleSkyline         INT,
-            PugetSound             INT,
-            LakeWashington         INT,
-            LakeSammamish          INT,
-            SmallLakeRiverCreek    INT,
-            OtherView              INT,
-            WfntLocation           INT,
-            WfntFootage            INT,
-            WfntBank               INT,
-            WfntPoorQuality        INT,
-            WfntRestrictedAccess   INT,
-            WfntAccessRights       CHAR(1),
-            WfntProximityInfluence CHAR(1),
-            TidelandShoreland      INT,
-            LotDepthFactor         INT,
-            TrafficNoise           INT,
-            AirportNoise           INT,
-            PowerLines             CHAR(1),
-            OtherNuisances         CHAR(1),
-            NbrBldgSites           INT,
-            Contamination          INT,
-            DNRLease               CHAR(1),
-            AdjacentGolfFairway    CHAR(1),
-            AdjacentGreenbelt      CHAR(1),
-            -- "Common Property" is listed here in the DOC, but isn't in the CSV
-            HistoricSite           INT,
-            CurrentUseDesignation  INT,
-            NativeGrowthProtEsmt   CHAR(1),
-            Easements              CHAR(1),
-            OtherDesignation       CHAR(1),
-            DeedRestrictions       CHAR(1),
-            DevelopmentRightsPurch CHAR(1),
-            CoalMineHazard         CHAR(1),
-            CriticalDrainage       CHAR(1),
-            ErosionHazard          CHAR(1),
-            LandfillBuffer         CHAR(1),
-            HundredYrFloodPlain    CHAR(1),
-            SeismicHazard          CHAR(1),
-            LandslideHazard        CHAR(1),
-            SteepSlopeHazard       CHAR(1),
-            Stream                 CHAR(1),
-            Wetland                CHAR(1),
-            SpeciesOfConcern       CHAR(1),
-            SensitiveAreaTract     CHAR(1),
-            WaterProblems          CHAR(1),
-            TranspConcurrency      CHAR(1),
-            OtherProblems          CHAR(1)
-        );
-    """
-    cursor = conn.cursor()
-    cursor.execute(CREATE_PARCELS_TABLE_QUERY)
-    conn.commit()
+    execute_sql_script(conn, "05_create_parcels_table.sql")
 
 def copy_csv_to_sales_table(conn, sales_csv_file):
     # skip the header row
     next(sales_csv_file)
-
-    COPY_SALES_QUERY = """COPY sales FROM STDIN WITH (FORMAT CSV)"""
-    cursor = conn.cursor()
-    cursor.copy_expert(COPY_SALES_QUERY, sales_csv_file)
-    conn.commit()
+    copy_expert_psql_script(conn, "06_copy_sales_csv_to_table.psql", sales_csv_file)
 
 def copy_csv_to_buildings_table(conn, buildings_csv_file):
     # skip the header row
     next(buildings_csv_file)
-
-    COPY_BUILDINGS_QUERY = """COPY buildings FROM STDIN WITH (FORMAT CSV)"""
-    cursor = conn.cursor()
-    cursor.copy_expert(COPY_BUILDINGS_QUERY, buildings_csv_file)
-    conn.commit()
+    copy_expert_psql_script(conn, "07_copy_buildings_csv_to_table.psql", buildings_csv_file)
 
 def copy_csv_to_parcels_table(conn, parcels_csv_file):
     # skip the header row
     next(parcels_csv_file)
-
-    COPY_PARCELS_QUERY = """COPY parcels FROM STDIN WITH (FORMAT CSV)"""
-    cursor = conn.cursor()
-    cursor.copy_expert(COPY_PARCELS_QUERY, parcels_csv_file)
-    conn.commit()
+    copy_expert_psql_script(conn, "08_copy_parcels_csv_to_table.psql", parcels_csv_file)
 
 def create_tables():
     conn = psycopg2.connect(dbname="housing_data")
@@ -254,34 +65,49 @@ def create_database_and_tables():
 
 def create_sales_df():
     conn = psycopg2.connect(dbname="housing_data")
-
-    SALES_DF_QUERY = """
-        SELECT
-            CONCAT(sales.Major, sales.Minor) AS PIN,     -- parcel id number
-            sales.SalePrice,
-            sales.DocumentDate,
-            CASE
-                WHEN parcels.WfntLocation > 0            -- 1-9 indicate particular bodies of water
-                    THEN TRUE
-                ELSE                                     -- I infer that 0 means no waterfront
-                    FALSE
-            END as WfntLocation,
-            buildings.SqFtTotLiving
-        FROM sales                                       -- start the join with sales bc sale price is target
-        INNER JOIN parcels ON (                          -- parcel major + minor is the unique identifier
-            parcels.Major = sales.Major                  -- (parcels are the things being sold in the sales)
-            AND parcels.Minor = sales.Minor
-        )
-        INNER JOIN buildings ON (                        -- building belongs to one parcel
-            buildings.Major = parcels.Major              -- parcel can have many buildings (unclear how often)
-            AND buildings.Minor = parcels.Minor
-        )
-        WHERE (
-            date_part('year', sales.DocumentDate) = 2018 -- 2018 is the specified year
-            AND sales.SalePrice > 0                      -- assume that sale price of 0 is bad data
-        )
-        ORDER BY sales.DocumentDate;
-    """
-
-    sales_df = pd.read_sql_query(SALES_DF_QUERY, conn)
+    sales_df = return_result_of_sql_script(conn, "09_sales_df_query.sql")
+    conn.close()
     return sales_df
+
+def open_sql_script(script_filename):
+    """
+    Given a file path, open the file and return its contents
+    We assume that the file path is always inside the sql directory
+    """
+    dir = os.path.dirname(__file__)
+    relative_filename = os.path.join(dir, 'sql', script_filename)
+
+    file_obj = open(relative_filename, 'r')
+    file_contents = file_obj.read()
+    file_obj.close()
+
+    return file_contents
+
+def execute_sql_script(conn, script_filename):
+    """
+    Given a DB connection and a file path to a SQL script, open up the SQL
+    script and execute it
+    """
+    file_contents = open_sql_script(script_filename)
+    cursor = conn.cursor()
+    cursor.execute(file_contents)
+    conn.commit()
+
+def copy_expert_psql_script(conn, script_filename, csv_file):
+    """
+    Given a DB connection and a file path to a PSQL script, open up the PSQL
+    script and use it to run copy_expert
+    """
+    file_contents = open_sql_script(script_filename)
+    cursor = conn.cursor()
+    cursor.copy_expert(file_contents, csv_file)
+    conn.commit()
+
+def return_result_of_sql_script(conn, script_filename):
+    """
+    Given a DB connection and a file path to a SQL script, run the query and
+    return the results as a pandas dataframe
+    """
+    file_contents = open_sql_script(script_filename)
+    result = pd.read_sql_query(file_contents, conn)
+    return result

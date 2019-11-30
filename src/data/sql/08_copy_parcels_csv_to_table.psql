@@ -1,0 +1,1 @@
+COPY parcels FROM STDIN WITH (FORMAT CSV);

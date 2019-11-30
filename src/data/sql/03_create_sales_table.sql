@@ -1,0 +1,27 @@
+DROP TABLE IF EXISTS sales;
+CREATE TABLE sales (
+    ExciseTaxNbr INT,
+    Major CHAR(6),
+    Minor CHAR(4),
+    DocumentDate DATE,
+    SalePrice INT,
+    RecordingNbr CHAR(14),
+    Volume CHAR(3),
+    Page CHAR(3),
+    PlatNbr CHAR(6),
+    PlatType CHAR(1),
+    PlatLot CHAR(14),
+    PlatBlock CHAR(7),
+    SellerName TEXT,
+    BuyerName TEXT,
+    PropertyType INT,
+    PrincipalUse INT,
+    SaleInstrument INT,
+    AFForestLand CHAR(1),
+    AFCurrentUseLand CHAR(1),
+    AFNonProfitUse CHAR(1),
+    AFHistoricProperty CHAR(1),
+    SaleReason INT,
+    PropertyClass INT,
+    SaleWarning TEXT
+);
