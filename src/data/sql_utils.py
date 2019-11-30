@@ -65,36 +65,8 @@ def create_database_and_tables():
 
 def create_sales_df():
     conn = psycopg2.connect(dbname="housing_data")
-
-    SALES_DF_QUERY = """
-        SELECT
-            CONCAT(sales.Major, sales.Minor) AS PIN,     -- parcel id number
-            sales.SalePrice,
-            sales.DocumentDate,
-            CASE
-                WHEN parcels.WfntLocation > 0            -- 1-9 indicate particular bodies of water
-                    THEN TRUE
-                ELSE                                     -- I infer that 0 means no waterfront
-                    FALSE
-            END as WfntLocation,
-            buildings.SqFtTotLiving
-        FROM sales                                       -- start the join with sales bc sale price is target
-        INNER JOIN parcels ON (                          -- parcel major + minor is the unique identifier
-            parcels.Major = sales.Major                  -- (parcels are the things being sold in the sales)
-            AND parcels.Minor = sales.Minor
-        )
-        INNER JOIN buildings ON (                        -- building belongs to one parcel
-            buildings.Major = parcels.Major              -- parcel can have many buildings (unclear how often)
-            AND buildings.Minor = parcels.Minor
-        )
-        WHERE (
-            date_part('year', sales.DocumentDate) = 2018 -- 2018 is the specified year
-            AND sales.SalePrice > 0                      -- assume that sale price of 0 is bad data
-        )
-        ORDER BY sales.DocumentDate;
-    """
-
-    sales_df = pd.read_sql_query(SALES_DF_QUERY, conn)
+    sales_df = return_result_of_sql_script(conn, "09_sales_df_query.sql")
+    conn.close()
     return sales_df
 
 def open_sql_script(script_filename):
@@ -130,3 +102,12 @@ def copy_expert_psql_script(conn, script_filename, csv_file):
     cursor = conn.cursor()
     cursor.copy_expert(file_contents, csv_file)
     conn.commit()
+
+def return_result_of_sql_script(conn, script_filename):
+    """
+    Given a DB connection and a file path to a SQL script, run the query and
+    return the results as a pandas dataframe
+    """
+    file_contents = open_sql_script(script_filename)
+    result = pd.read_sql_query(file_contents, conn)
+    return result
